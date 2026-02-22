@@ -1,0 +1,160 @@
+# ============================================================
+# DTARF - Distributed Threat Analysis & Response Framework
+# Master Configuration File
+# ============================================================
+
+# --- General Settings ---
+general:
+  framework_name: "DTARF"
+  version: "1.0.0"
+  log_level: "INFO"
+  data_dir: "data"
+  logs_dir: "logs"
+  evidence_dir: "evidence"
+
+# --- Data Ingestion Layer ---
+ingestion:
+  log_collector:
+    sources:
+      - name: "nginx"
+        path: "logs/access.log"
+        format: "combined"
+      - name: "syslog"
+        path: "logs/syslog.log"
+        format: "syslog"
+      - name: "auth"
+        path: "logs/auth.log"
+        format: "auth"
+    poll_interval_sec: 2
+
+  system_telemetry:
+    enabled: true
+    collect_interval_sec: 5
+    metrics:
+      - cpu_percent
+      - memory_percent
+      - disk_io
+      - active_processes
+      - network_connections
+
+  packet_sniffer:
+    enabled: true
+    interface: null  # null = auto-detect
+    bpf_filter: "ip or arp or icmp"
+    promiscuous: true
+    sliding_window_sec: 30
+    buffer_size: 1000
+
+# --- Core Analytics Engine ---
+analytics:
+  detection_engine:
+    shannon_entropy:
+      high_threshold: 7.0
+      medium_threshold: 5.0
+      block_size: 1024
+    statistical_anomaly:
+      z_score_threshold: 3.0
+      baseline_window_sec: 300
+      min_samples: 50
+    sliding_window:
+      window_size_sec: 30
+      step_size_sec: 5
+      packet_rate_threshold: 1000
+      byte_rate_threshold: 10000000  # 10MB/s
+      connection_rate_threshold: 100
+
+  threat_intelligence:
+    enabled: true
+    feeds:
+      abuseipdb:
+        enabled: true
+        api_key: ""  # Set via environment variable ABUSEIPDB_API_KEY
+        cache_ttl_sec: 3600
+        confidence_threshold: 80
+      otx:
+        enabled: true
+        api_key: ""  # Set via environment variable OTX_API_KEY
+        cache_ttl_sec: 3600
+      misp:
+        enabled: false
+        url: ""
+        api_key: ""
+        verify_cert: true
+    local_ioc_db: "data/ioc_database.json"
+    update_interval_sec: 3600
+
+# --- Response Orchestration ---
+response:
+  orchestrator:
+    enabled: true
+    severity_levels:
+      critical: 90
+      high: 70
+      medium: 40
+      low: 10
+    auto_response_threshold: 70  # Severity >= this triggers auto-response
+    cooldown_sec: 300  # Don't re-trigger same action within this window
+
+  playbooks:
+    ddos_mitigation:
+      actions: ["rate_limit", "ip_blacklist"]
+      severity: "critical"
+    port_scan_response:
+      actions: ["ip_blacklist", "alert"]
+      severity: "high"
+    arp_spoof_response:
+      actions: ["alert", "network_isolate"]
+      severity: "critical"
+    malware_response:
+      actions: ["quarantine", "alert", "evidence_collect"]
+      severity: "critical"
+    brute_force_response:
+      actions: ["rate_limit", "ip_blacklist", "alert"]
+      severity: "high"
+    data_exfil_response:
+      actions: ["network_isolate", "evidence_collect", "alert"]
+      severity: "critical"
+
+  action_executor:
+    firewall_backend: "windows_firewall"  # windows_firewall | iptables
+    blacklist_file: "data/blacklisted_ips.json"
+    whitelist_file: "data/whitelisted_ips.json"
+    max_blacklist_duration_sec: 86400  # 24 hours
+
+# --- Forensic Evidence & Audit Layer ---
+forensics:
+  evidence_collector:
+    capture_memory_artifacts: true
+    capture_network: true
+    capture_logs: true
+    capture_on_alert_severity: 70  # Capture evidence for alerts >= this severity
+    max_pcap_size_mb: 50
+    retention_days: 90
+
+  chain_of_custody:
+    hash_algorithm: "sha256"  # sha256 | sha3_256
+    store_dir: "evidence/chain_of_custody"
+    enable_timestamping: true
+    immutable_log: "evidence/custody_ledger.json"
+
+# --- Dashboard ---
+dashboard:
+  host: "0.0.0.0"
+  port: 8080
+  secret_key: "change-me-in-production"
+  jwt_secret: "change-me-jwt-secret"
+  jwt_expiry_hours: 24
+  cors_origins: ["http://localhost:3000", "http://localhost:8080"]
+
+# --- Performance Metrics ---
+performance:
+  enable_metrics: true
+  metrics_window_sec: 3600
+  target_accuracy: 0.968
+  target_mttr_ms: 87
+  export_interval_sec: 60
+
+# --- External Module Paths ---
+external_modules:
+  apt_malware_module: "E:\\APT_&_Malware_Module"
+  threshold_detection_module: "E:\\threshold_based_detection"

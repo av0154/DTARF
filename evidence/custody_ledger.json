@@ -1,0 +1,44 @@
+[
+  {
+    "entry_id": "COC-1771735126288-000000",
+    "alert_id": "DTARF-1771735083373-2480",
+    "evidence_path": "evidence/artifacts\\unknown_20260222_100803_20260222_100803",
+    "evidence_type": "incident_package",
+    "description": "Auto-collected for high_packet_rate",
+    "collector": "dtarf_engine",
+    "hash_algorithm": "sha256",
+    "hash_value": "3b3f455b895b0cded173c149a05297cbe1e0d1b27accb2d09dc2cb8cfcbc23c4",
+    "file_size": 641758,
+    "registered_at": "2026-02-22T10:08:46.327303",
+    "status": "registered",
+    "actions": [
+      {
+        "action": "registered",
+        "performed_by": "dtarf_engine",
+        "timestamp": "2026-02-22T10:08:46.327317",
+        "notes": "Initial evidence registration"
+      }
+    ],
+    "verification_history": [
+      {
+        "entry_id": "COC-1771735126288-000000",
+        "status": "verified",
+        "integrity": "INTACT",
+        "recorded_hash": "3b3f455b895b0cded173c149a05297cbe1e0d1b27accb2d09dc2cb8cfcbc23c4",
+        "current_hash": "3b3f455b895b0cded173c149a05297cbe1e0d1b27accb2d09dc2cb8cfcbc23c4",
+        "hash_match": true,
+        "verified_at": "2026-02-22T10:09:10.317086"
+      },
+      {
+        "entry_id": "COC-1771735126288-000000",
+        "status": "verified",
+        "integrity": "INTACT",
+        "recorded_hash": "3b3f455b895b0cded173c149a05297cbe1e0d1b27accb2d09dc2cb8cfcbc23c4",
+        "current_hash": "3b3f455b895b0cded173c149a05297cbe1e0d1b27accb2d09dc2cb8cfcbc23c4",
+        "hash_match": true,
+        "verified_at": "2026-02-22T10:26:16.379628"
+      }
+    ],
+    "prev_entry_hash": "GENESIS"
+  }
+]

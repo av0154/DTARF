@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="DTARF - Distributed Threat Analysis & Response Framework Dashboard">
+    <title>DTARF Dashboard</title>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap"
+        rel="stylesheet">
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+
+<body>
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-screen">
+        <div class="login-card">
+            <div class="login-header">
+                <div class="login-logo">
+                    <svg viewBox="0 0 40 40" width="48" height="48">
+                        <circle cx="20" cy="20" r="18" fill="none" stroke="url(#grad1)" stroke-width="2.5" />
+                        <path d="M12 20 L20 12 L28 20 L20 28Z" fill="url(#grad1)" opacity="0.8" />
+                        <circle cx="20" cy="20" r="5" fill="#0f172a" />
+                        <circle cx="20" cy="20" r="2" fill="url(#grad1)" />
+                        <defs>
+                            <linearGradient id="grad1" x1="0%" y1="0%" x2="100%" y2="100%">
+                                <stop offset="0%" style="stop-color:#06b6d4" />
+                                <stop offset="100%" style="stop-color:#8b5cf6" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </div>
+                <h1>DTARF</h1>
+                <p>Distributed Threat Analysis & Response Framework</p>
+            </div>
+            <form id="login-form" onsubmit="handleLogin(event)">
+                <div class="form-group">
+                    <label for="username">Username</label>
+                    <input type="text" id="username" placeholder="Enter username" value="admin" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter password" value="admin123" required>
+                </div>
+                <button type="submit" class="btn-primary" id="login-btn">Sign In</button>
+                <p class="login-hint">Default: admin / admin123</p>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Dashboard -->
+    <div id="app" class="app hidden">
+        <!-- Sidebar -->
+        <nav class="sidebar">
+            <div class="sidebar-header">
+                <svg viewBox="0 0 40 40" width="32" height="32">
+                    <circle cx="20" cy="20" r="18" fill="none" stroke="url(#grad2)" stroke-width="2.5" />
+                    <path d="M12 20 L20 12 L28 20 L20 28Z" fill="url(#grad2)" opacity="0.8" />
+                    <circle cx="20" cy="20" r="5" fill="#0f172a" />
+                    <circle cx="20" cy="20" r="2" fill="url(#grad2)" />
+                    <defs>
+                        <linearGradient id="grad2" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" style="stop-color:#06b6d4" />
+                            <stop offset="100%" style="stop-color:#8b5cf6" />
+                        </linearGradient>
+                    </defs>
+                </svg>
+                <span class="sidebar-title">DTARF</span>
+            </div>
+            <ul class="nav-links">
+                <li class="nav-item active" data-page="overview" onclick="switchPage('overview')">
+                    <span class="nav-icon">📊</span><span class="nav-text">Overview</span>
+                </li>
+                <li class="nav-item" data-page="alerts" onclick="switchPage('alerts')">
+                    <span class="nav-icon">🔔</span><span class="nav-text">Alerts</span>
+                    <span class="badge" id="alert-badge">0</span>
+                </li>
+                <li class="nav-item" data-page="detection" onclick="switchPage('detection')">
+                    <span class="nav-icon">🔍</span><span class="nav-text">Detection Engine</span>
+                </li>
+                <li class="nav-item" data-page="threat-intel" onclick="switchPage('threat-intel')">
+                    <span class="nav-icon">🌐</span><span class="nav-text">Threat Intel</span>
+                </li>
+                <li class="nav-item" data-page="response" onclick="switchPage('response')">
+                    <span class="nav-icon">🛡️</span><span class="nav-text">Response</span>
+                </li>
+                <li class="nav-item" data-page="forensics" onclick="switchPage('forensics')">
+                    <span class="nav-icon">🔬</span><span class="nav-text">Forensics</span>
+                </li>
+                <li class="nav-item" data-page="performance" onclick="switchPage('performance')">
+                    <span class="nav-icon">📈</span><span class="nav-text">Performance</span>
+                </li>
+                <li class="nav-item" data-page="network" onclick="switchPage('network')">
+                    <span class="nav-icon">📡</span><span class="nav-text">Network</span>
+                </li>
+            </ul>
+            <div class="sidebar-footer">
+                <div class="user-info">
+                    <span class="user-avatar">👤</span>
+                    <span id="user-name">admin</span>
+                </div>
+                <button class="btn-logout" onclick="handleLogout()">Logout</button>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Header -->
+            <header class="top-header">
+                <div class="header-left">
+                    <h2 id="page-title">Overview</h2>
+                    <span class="header-subtitle" id="page-subtitle">Real-time security monitoring</span>
+                </div>
+                <div class="header-right">
+                    <div class="status-indicator">
+                        <span class="pulse-dot"></span>
+                        <span>Live</span>
+                    </div>
+                    <span class="header-time" id="header-time"></span>
+                </div>
+            </header>
+
+            <!-- Page: Overview -->
+            <div id="page-overview" class="page active">
+                <div class="stats-grid">
+                    <div class="stat-card stat-critical">
+                        <div class="stat-icon">🚨</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-critical">0</span>
+                            <span class="stat-label">Critical Alerts</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-high">
+                        <div class="stat-icon">⚠️</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-high">0</span>
+                            <span class="stat-label">High Severity</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-medium">
+                        <div class="stat-icon">📋</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-medium">0</span>
+                            <span class="stat-label">Medium Alerts</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-info2">
+                        <div class="stat-icon">🛡️</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="stat-blocked">0</span>
+                            <span class="stat-label">IPs Blocked</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="dashboard-grid">
+                    <div class="card card-wide">
+                        <div class="card-header">
+                            <h3>System Telemetry</h3>
+                            <span class="card-badge">Live</span>
+                        </div>
+                        <div class="card-body">
+                            <div class="telemetry-grid">
+                                <div class="metric-gauge">
+                                    <div class="gauge-ring">
+                                        <svg viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="42" fill="none" stroke="#1e293b"
+                                                stroke-width="8" />
+                                            <circle id="cpu-ring" cx="50" cy="50" r="42" fill="none" stroke="#06b6d4"
+                                                stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="263.89"
+                                                stroke-linecap="round" transform="rotate(-90 50 50)" />
+                                        </svg>
+                                        <span class="gauge-value" id="cpu-value">0%</span>
+                                    </div>
+                                    <span class="gauge-label">CPU</span>
+                                </div>
+                                <div class="metric-gauge">
+                                    <div class="gauge-ring">
+                                        <svg viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="42" fill="none" stroke="#1e293b"
+                                                stroke-width="8" />
+                                            <circle id="mem-ring" cx="50" cy="50" r="42" fill="none" stroke="#8b5cf6"
+                                                stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="263.89"
+                                                stroke-linecap="round" transform="rotate(-90 50 50)" />
+                                        </svg>
+                                        <span class="gauge-value" id="mem-value">0%</span>
+                                    </div>
+                                    <span class="gauge-label">Memory</span>
+                                </div>
+                                <div class="metric-gauge">
+                                    <div class="gauge-ring">
+                                        <svg viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="42" fill="none" stroke="#1e293b"
+                                                stroke-width="8" />
+                                            <circle id="net-ring" cx="50" cy="50" r="42" fill="none" stroke="#10b981"
+                                                stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="263.89"
+                                                stroke-linecap="round" transform="rotate(-90 50 50)" />
+                                        </svg>
+                                        <span class="gauge-value" id="net-value">0</span>
+                                    </div>
+                                    <span class="gauge-label">Connections</span>
+                                </div>
+                                <div class="metric-gauge">
+                                    <div class="gauge-ring">
+                                        <svg viewBox="0 0 100 100">
+                                            <circle cx="50" cy="50" r="42" fill="none" stroke="#1e293b"
+                                                stroke-width="8" />
+                                            <circle id="proc-ring" cx="50" cy="50" r="42" fill="none" stroke="#f59e0b"
+                                                stroke-width="8" stroke-dasharray="263.89" stroke-dashoffset="263.89"
+                                                stroke-linecap="round" transform="rotate(-90 50 50)" />
+                                        </svg>
+                                        <span class="gauge-value" id="proc-value">0</span>
+                                    </div>
+                                    <span class="gauge-label">Processes</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Performance</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="perf-metrics">
+                                <div class="perf-item">
+                                    <span class="perf-label">Detection Accuracy</span>
+                                    <div class="perf-bar-wrap">
+                                        <div class="perf-bar" id="perf-accuracy" style="width: 96.8%"></div>
+                                    </div>
+                                    <span class="perf-value" id="perf-accuracy-val">96.8%</span>
+                                </div>
+                                <div class="perf-item">
+                                    <span class="perf-label">MTTR</span>
+                                    <span class="perf-value perf-highlight" id="perf-mttr">87ms</span>
+                                </div>
+                                <div class="perf-item">
+                                    <span class="perf-label">False Positive Rate</span>
+                                    <span class="perf-value" id="perf-fpr">0%</span>
+                                </div>
+                                <div class="perf-item">
+                                    <span class="perf-label">Total Detections</span>
+                                    <span class="perf-value" id="perf-total">0</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <div class="card-header">
+                            <h3>Threat Intel</h3>
+                        </div>
+                        <div class="card-body">
+                            <div class="ti-stats">
+                                <div class="ti-item">
+                                    <span class="ti-count" id="ti-ips">0</span>
+                                    <span class="ti-label">Malicious IPs</span>
+                                </div>
+                                <div class="ti-item">
+                                    <span class="ti-count" id="ti-domains">0</span>
+                                    <span class="ti-label">Malicious Domains</span>
+                                </div>
+                                <div class="ti-item">
+                                    <span class="ti-count" id="ti-hashes">0</span>
+                                    <span class="ti-label">Malicious Hashes</span>
+                                </div>
+                                <div class="ti-item">
+                                    <span class="ti-count" id="ti-alerts">0</span>
+                                    <span class="ti-label">TI Alerts</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="card card-full">
+                    <div class="card-header">
+                        <h3>Recent Alerts</h3>
+                        <button class="btn-sm" onclick="switchPage('alerts')">View All →</button>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-table-wrap">
+                            <table class="alert-table" id="recent-alerts-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Severity</th>
+                                        <th>Type</th>
+                                        <th>Source IP</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="recent-alerts-body">
+                                    <tr>
+                                        <td colspan="6" class="empty-row">No alerts detected yet</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Alerts -->
+            <div id="page-alerts" class="page">
+                <div class="card card-full">
+                    <div class="card-header">
+                        <h3>All Alerts</h3>
+                        <div class="filter-group">
+                            <select id="alert-filter" onchange="loadAlerts()">
+                                <option value="">All Status</option>
+                                <option value="new">New</option>
+                                <option value="responded">Responded</option>
+                                <option value="acknowledged">Acknowledged</option>
+                                <option value="false_positive">False Positive</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-table-wrap">
+                            <table class="alert-table">
+                                <thead>
+                                    <tr>
+                                        <th>ID</th>
+                                        <th>Time</th>
+                                        <th>Severity</th>
+                                        <th>Type</th>
+                                        <th>Source</th>
+                                        <th>Source IP</th>
+                                        <th>Status</th>
+                                        <th>Response Time</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="all-alerts-body">
+                                    <tr>
+                                        <td colspan="9" class="empty-row">No alerts</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Detection Engine -->
+            <div id="page-detection" class="page">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🔍</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="det-total">0</span>
+                            <span class="stat-label">Total Alerts</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="det-baselines">0</span>
+                            <span class="stat-label">Active Baselines</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-full">
+                    <div class="card-header">
+                        <h3>Detection Alerts</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-table-wrap">
+                            <table class="alert-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Type</th>
+                                        <th>Severity</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="detection-alerts-body">
+                                    <tr>
+                                        <td colspan="4" class="empty-row">No detection alerts</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Threat Intel -->
+            <div id="page-threat-intel" class="page">
+                <div class="card">
+                    <div class="card-header">
+                        <h3>IOC Lookup</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="lookup-form">
+                            <div class="form-row">
+                                <select id="lookup-type">
+                                    <option value="ip">IP Address</option>
+                                    <option value="domain">Domain</option>
+                                </select>
+                                <input type="text" id="lookup-value" placeholder="Enter IP or domain...">
+                                <button class="btn-primary" onclick="performLookup()">Check</button>
+                            </div>
+                        </div>
+                        <div id="lookup-result" class="lookup-result hidden"></div>
+                    </div>
+                </div>
+                <div class="card card-full" style="margin-top:1rem">
+                    <div class="card-header">
+                        <h3>Add IOC</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="lookup-form">
+                            <div class="form-row">
+                                <select id="ioc-type">
+                                    <option value="ips">IP</option>
+                                    <option value="domains">Domain</option>
+                                    <option value="hashes">File Hash</option>
+                                </select>
+                                <input type="text" id="ioc-value" placeholder="Enter indicator...">
+                                <input type="text" id="ioc-desc" placeholder="Description...">
+                                <button class="btn-primary" onclick="addIOC()">Add</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Response -->
+            <div id="page-response" class="page">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🤖</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="resp-auto">0</span>
+                            <span class="stat-label">Auto Responses</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🚫</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="resp-blocked">0</span>
+                            <span class="stat-label">Blocked IPs</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📕</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="resp-playbooks">0</span>
+                            <span class="stat-label">Active Playbooks</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-full">
+                    <div class="card-header">
+                        <h3>Blacklisted IPs</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-table-wrap">
+                            <table class="alert-table">
+                                <thead>
+                                    <tr>
+                                        <th>IP</th>
+                                        <th>Reason</th>
+                                        <th>Blocked At</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="blacklist-body">
+                                    <tr>
+                                        <td colspan="4" class="empty-row">No blocked IPs</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-full" style="margin-top:1rem">
+                    <div class="card-header">
+                        <h3>Action Log</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-table-wrap">
+                            <table class="alert-table">
+                                <thead>
+                                    <tr>
+                                        <th>Time</th>
+                                        <th>Action</th>
+                                        <th>Status</th>
+                                        <th>Details</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="action-log-body">
+                                    <tr>
+                                        <td colspan="4" class="empty-row">No actions recorded</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Forensics -->
+            <div id="page-forensics" class="page">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">🔐</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="for-entries">0</span>
+                            <span class="stat-label">Evidence Entries</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔗</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="for-algo">SHA-256</span>
+                            <span class="stat-label">Hash Algorithm</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-full">
+                    <div class="card-header">
+                        <h3>Chain of Custody Ledger</h3>
+                        <button class="btn-sm btn-warning" onclick="verifyLedger()">🔍 Verify Integrity</button>
+                    </div>
+                    <div class="card-body">
+                        <div id="ledger-verify-result" class="hidden"></div>
+                        <div class="alert-table-wrap">
+                            <table class="alert-table">
+                                <thead>
+                                    <tr>
+                                        <th>Entry ID</th>
+                                        <th>Alert ID</th>
+                                        <th>Type</th>
+                                        <th>Hash</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="ledger-body">
+                                    <tr>
+                                        <td colspan="6" class="empty-row">No evidence recorded</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Performance -->
+            <div id="page-performance" class="page">
+                <div class="stats-grid">
+                    <div class="stat-card stat-highlight">
+                        <div class="stat-icon">🎯</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="pf-accuracy">96.8%</span>
+                            <span class="stat-label">Detection Accuracy</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-highlight">
+                        <div class="stat-icon">⚡</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="pf-mttr">87ms</span>
+                            <span class="stat-label">Mean Time to Respond</span>
+                        </div>
+                    </div>
+                    <div class="stat-card stat-highlight">
+                        <div class="stat-icon">✅</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="pf-fpr">0%</span>
+                            <span class="stat-label">False Positive Rate</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-full">
+                    <div class="card-header">
+                        <h3>Baseline Comparison</h3>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert-table-wrap">
+                            <table class="alert-table comparison-table" id="comparison-table">
+                                <thead>
+                                    <tr>
+                                        <th>Metric</th>
+                                        <th>DTARF</th>
+                                        <th>Multi-Layered SEM</th>
+                                        <th>ELK SIEM</th>
+                                        <th>Snort NIDS</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="comparison-body">
+                                    <tr>
+                                        <td colspan="5" class="empty-row">Loading comparison...</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page: Network -->
+            <div id="page-network" class="page">
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-icon">📦</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="net-packets">0</span>
+                            <span class="stat-label">Packets Captured</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">📊</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="net-pps">0</span>
+                            <span class="stat-label">Packets/sec</span>
+                        </div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon">🔗</div>
+                        <div class="stat-info">
+                            <span class="stat-value" id="net-sources">0</span>
+                            <span class="stat-label">Unique Sources</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="card card-full">
+                    <div class="card-header">
+                        <h3>Protocol Distribution</h3>
+                    </div>
+                    <div class="card-body">
+                        <div id="protocol-bars" class="protocol-bars"></div>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <div id="alert-detail-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Alert Details</h3>
+                <button class="btn-close" onclick="closeModal('alert-detail-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="alert-detail-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-sm" id="modal-forensic-btn"
+                    style="background:var(--accent-accent);color:white">Forensic Report</button>
+                <button class="btn-primary" id="modal-ack-btn">Acknowledge</button>
+                <button class="btn-secondary" onclick="closeModal('alert-detail-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Forensic Report Modal -->
+    <div id="forensic-report-modal" class="modal hidden">
+        <div class="modal-content" style="max-width: 900px;">
+            <div class="modal-header">
+                <h3>Forensic Investigation Report</h3>
+                <button class="btn-close" onclick="closeModal('forensic-report-modal')">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div id="forensic-report-content"></div>
+            </div>
+            <div class="modal-footer">
+                <button class="btn-secondary" onclick="closeModal('forensic-report-modal')">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="/static/dashboard.js"></script>
+</body>
+
+</html>
